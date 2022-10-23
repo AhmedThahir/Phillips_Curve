@@ -44,6 +44,11 @@ fred = Fred(api_key="ee01755ad12aff2d809e022069706883")
 
 # # Importing Data
 
+# ## SPF
+# 
+# > An Excel workbook with multiple worksheets. Each worksheet holds the time series of mean forecasts for the level of a different variable. The first two columns list the year and quarter in which the survey was conducted. The remaining columns give the mean forecasts for all quarterly and annual horizons, as described below
+# ~ SPF Documentation
+
 # In[5]:
 
 
@@ -61,8 +66,12 @@ spf_unrate
 
 
 earliest_year = spf_unrate.index[0]
-earliest_year
 
+
+# # FRED Unemployment Rate
+# 
+# Starting from the earliest year of SPF
+# (Why unnecessarily load everything?)
 
 # In[7]:
 
@@ -80,13 +89,6 @@ fred_unrate.index.name = 'YEAR'
 fred_unrate
 
 
-# > An Excel workbook with multiple worksheets. Each worksheet holds the time
-# series of mean forecasts for the level of a different variable. The first two columns
-# list the year and quarter in which the survey was conducted. The remaining
-# columns give the mean forecasts for all quarterly and annual horizons, as
-# described below
-# ~ SPF Documentation
-
 # # Visualization
 
 # In[8]:
@@ -97,13 +99,14 @@ fig = go.Figure().update_layout(
   title = dict(
     text =
         "Unemployment Rate over the Years" +
-        "<br><sup>" + "(Interactive)" + "</sup>",
+        "<br><sup>" + "(Interactive Graph)" + "</sup>",
     x = 0.08,
     y = 0.90
   ),
   
   # axes titles
   xaxis_title = "Year",
+  yaxis_title = "Unemployment Rate",
   
   hovermode = "x unified",
   
