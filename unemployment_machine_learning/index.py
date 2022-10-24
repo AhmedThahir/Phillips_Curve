@@ -57,7 +57,6 @@ spf_unrate = (
         "ds/us/survey_of_professional_forecasters_mean_responses.xlsx",
         parse_dates = True
     )
-    .set_index("YEAR")
 )
 spf_unrate
 
@@ -65,7 +64,17 @@ spf_unrate
 # In[6]:
 
 
-earliest_year = spf_unrate.index[0]
+earliest_year = spf_unrate["YEAR"].iloc[0]
+
+
+# In[7]:
+
+
+spf_unrate = spf_unrate.set_index(spf_unrate['YEAR'].astype(str) + 'Q' + spf_unrate['QUARTER'].astype(str))
+spf_unrate.index.name="PERIOD"
+
+spf_unrate = spf_unrate.drop(["YEAR", "QUARTER"], axis=1)
+spf_unrate
 
 
 # # FRED Unemployment Rate
@@ -73,25 +82,37 @@ earliest_year = spf_unrate.index[0]
 # Starting from the earliest year of SPF
 # (Why unnecessarily load everything?)
 
-# In[7]:
+# In[8]:
 
 
 fred_unrate = (
     pd.DataFrame(
-        fred.get_series(
+        data = fred.get_series(
             "UNRATE",
             observation_start = str(earliest_year) + "-01-01"
-        )
+        ),
+        columns = ["UNRATE"]
     )
 )
-fred_unrate.index.name = 'YEAR'
+fred_unrate.index.name = 'DATE'
 
+fred_unrate
+
+
+# ## Resampling the Data to Quarterly Mean
+
+# In[9]:
+
+
+fred_unrate.index = fred_unrate.index.to_period('Q')
+fred_unrate = fred_unrate.groupby("DATE").mean()
+fred_unrate.index.name="PERIOD"
 fred_unrate
 
 
 # # Visualization
 
-# In[8]:
+# In[10]:
 
 
 fig = go.Figure().update_layout(
@@ -105,7 +126,7 @@ fig = go.Figure().update_layout(
   ),
   
   # axes titles
-  xaxis_title = "Year",
+  xaxis_title = "Period",
   yaxis_title = "Unemployment Rate",
   
   hovermode = "x unified",
@@ -124,13 +145,13 @@ fig = go.Figure().update_layout(
 )
 
 fig.add_trace(go.Scattergl(
-    x = fred_unrate.index,
+    x = fred_unrate.index.astype(str),
     y = fred_unrate[fred_unrate.columns[0]],
     name = "FRED (Actual)"    
 ))
 
 fig.add_trace(go.Scattergl(
-    x = spf_unrate.index,
+    x = spf_unrate.index.astype(str),
     y = spf_unrate["UNEMP1"],
     name = "SPF (Forecast)"
 ))
